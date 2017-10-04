@@ -28,7 +28,7 @@ describe('bunyan-nats-test', function () {
         hemera.add({
           topic: TOPIC
         }, function (req, cb) {
-          assert.equal(message, JSON.parse(req.messages).msg, 'got correct log mesasge via nats');
+          assert.equal(message, JSON.parse(req.data).msg, 'got correct log mesasge via nats');
           done();
         })
         LOGGER.info(message);

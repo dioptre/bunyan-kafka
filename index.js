@@ -32,7 +32,6 @@ function BunyanNatsStream(opts) {
     this._hemera = new Hemera(opts.nats, { logLevel: 'info' });
 
     self._hemera.ready(function () {
-        self._log.info('nats ready');
         self.emit('ready');
         self._log.addStream({
             level: bunyan.INFO,
@@ -49,17 +48,14 @@ BunyanNatsStream.prototype.write = function write(record) {
     var self = this;
     var payload = {
         topic: self._log.fields.name,
-        messages: record
-    };
-
+        data: record
+    };    
     self._log.trace({payload: payload}, 'sending payload to nats');
     self._hemera.act(payload, function (err, resp) {
       if (err) {
-          self._log.warn({err: err, data: data},
-                         'unable to send log to nats');
-
+          console.log({err: err, data: resp || "[NO DATA]"}, 'unable to send log to nats')
           if (self.listeners('error').length !== 0) {
-              self.emit('error', err, data);
+              self.emit('error', err, resp || "[NO DATA]");
           }
       }
       //console.log("Result", resp)

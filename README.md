@@ -1,43 +1,30 @@
-# bunyan-kafka
-This is a [bunyan](https://github.com/trentm/node-bunyan) plugin for Apache
-[Kafka](https://kafka.apache.org/). It allows you to stream your bunyan logs to
-Kafka. You can then forward the logs on to some other distributed processing
+# bunyan-nats
+This is a [bunyan](https://github.com/trentm/node-bunyan) plugin for NATS
+[nats](https://nats.io/). It allows you to stream your bunyan logs to
+nats. You can then forward the logs on to some other distributed processing
 framework, such as Elasticsearch.
 
 ## Usage
-The stream needs to connect to kafka, and thus we have to instantiate it
+The stream needs to connect to nats, and thus we have to instantiate it
 asynchronously and add the stream to the logger after the `ready` event has been
 emitted. We use `bunyan`'s `addStream()` API to accomplish this.
 
 ```js
-var KafkaStream = require('kafka-stream');
-LOGGER = bunyan.createLogger({
-    name: 'kafka-bunyan-test',
-    level: bunyan.TRACE
+var uuid = require('uuid');
+var BunyanNatsStream = require('bunyan-nats')
+var TOPIC = 'nats-bunyan-test';
+const servers = ["nats://localhost:4222"];
+const nats = require("nats").connect({"servers": servers});
+var LOGGER = bunyan.createLogger({
+    name: TOPIC,
+    level: bunyan.INFO,
+    streams: []
 });
-
-var kafkaStream = new KafkaStream({
-    kafka: {
-        connectionString: 'localhost:2181'
-    },
-    topic: 'bunyan-kafka-topic'
-});
-
-kafkaStream.on('ready', function () {
-    LOGGER.addStream({
-        level: bunyan.INFO,
-        stream: kafkaStream
-    });
-
-    // Now you can log
-    LOGGER.info('Come on you target for faraway laughter, come on you stranger, you legend, you martyr, and shine!');
-});
-
+var bns = new BunyanNatsStream({nats: nats, log : LOGGER});
 ```
 
 ## Tests
-You'll need to have kafka installed locally, with zookeeper running on
-`localhost:2818`
+You'll need to have nats installed locally, port 4222
 
 # Contributions
 Contributions are welcome, please run ```make``` to ensure tests, lint, and
@@ -46,6 +33,7 @@ style run cleanly.
 # LICENSE
 The MIT License (MIT)
 
+Copyright (c) 2017 Andrew Grosser
 Copyright (c) 2015 Yunong J Xiao
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

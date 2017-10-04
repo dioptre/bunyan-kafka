@@ -6,4 +6,4 @@ node_js:
 
 before_install
    - sudo apt-get install -y zookeeper
-   - sudo apt-get install -y kafka
+   - sudo apt-get install -y nats

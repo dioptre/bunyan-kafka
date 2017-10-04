@@ -1,33 +1,35 @@
 {
-  "name": "bunyan-kafka",
+  "name": "bunyan-nats",
   "version": "1.0.1",
-  "description": "bunyan kafka plugin",
+  "description": "bunyan nats plugin",
   "main": "index.js",
   "scripts": {
     "test": "make test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yunong/bunyan-kafka.git"
+    "url": "git+https://github.com/dioptre/bunyan-nats.git"
   },
   "keywords": [
     "bunyan",
-    "kakfa",
+    "nats",
     "logs",
     "json",
     "logging",
     "log"
   ],
-  "author": "Yunong J Xiao",
+  "author": "Andrew Grosser",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/yunong/bunyan-kafka/issues"
+    "url": "https://github.com/dioptre/bunyan-nats/issues"
   },
-  "homepage": "https://github.com/yunong/bunyan-kafka#readme",
+  "homepage": "https://github.com/dioptre/bunyan-nats#readme",
   "dependencies": {
     "assert-plus": "^0.1.5",
-    "bunyan": "^1.6.0",
-    "kafka-node": "^0.3.1"
+    "bunyan": "^1.8.12",
+    "hemera": "0.0.5",
+    "nats": "^0.7.20",
+    "nats-hemera": "^2.1.0"
   },
   "devDependencies": {
     "chai": "^3.0.0",

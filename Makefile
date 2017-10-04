@@ -62,7 +62,7 @@ node_modules: package.json
 
 .PHONY: test
 test: node_modules $(MOCHA)
-	$(MOCHA) $(TEST_FILES)
+	$(MOCHA) $(TEST_FILES) --timeout 15000
 
 .PHONY: check
 check: lint style cover

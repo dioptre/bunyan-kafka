@@ -2,85 +2,67 @@
 
 var events = require('events');
 var util = require('util');
-
+var Hemera = require('nats-hemera');
 var assert = require('assert-plus');
 var bunyan = require('bunyan');
-var kafka = require('kafka-node');
 
 /**
- * KafkaStream. This is a bunyan plugin that will write your bunyan records to
- * a Kafka stream.
+ * natsStream. This is a bunyan plugin that will write your bunyan records to
+ * a nats stream.
  *
  * @param {Object} opts options object.
- * @param {Object} opts.kafka kafka-node options object.
- * @param {Object} [opts.log] optional bunyan logger.
+ * @param {Object} opts.nats nats object.
+ * @param {Object} opts.log bunyan logger.
  *
  * @fires error if there's an error with the stream.
  * @fires ready when the stream is ready to be used.
  * @returns {undefined}
  */
-function KafkaStream(opts) {
+function BunyanNatsStream(opts) {
     assert.object(opts, 'opts');
-    assert.object(opts.kafka, 'opts.kafka');
-    assert.string(opts.kafka.connectionString, 'opts.kafka.connectionString');
-    assert.string(opts.topic, 'opts.topic');
-    assert.optionalObject(opts.log, 'opts.log');
+    assert.object(opts.nats, 'opts.nats');
+    assert.object(opts.log, 'opts.log');
 
     events.EventEmitter.call(this);
 
     var self = this;
 
-    if (!opts.log) {
-        this._log = bunyan.createLogger({
-            name: 'bunyan-kafka',
-            level: process.env.LOG_LEVEL || bunyan.WARN
-        });
-    } else {
-        this._log = opts.log.childLogger({
-            component: 'bunyan-kafka'
-        });
-    }
+    this._log = opts.log;
 
-    this._topic = opts.topic;
+    this._hemera = new Hemera(opts.nats, { logLevel: 'info' });
 
-    this._client = new kafka.Client(opts.kafka.connectionString,
-                                    opts.kafka.clientId, opts.kafka.zkOptions);
-    this._producer = new kafka.HighLevelProducer(self._client);
-
-    self._producer.on('error', function (err) {
-        self._log.warn(err, 'kafka error');
-
-        if (self.listeners('error').length !== 0) {
-            self.emit('error', err);
-        }
-    });
-
-    self._producer.on('ready', function () {
-        self._log.info('kafka ready');
+    self._hemera.ready(function () {
+        self._log.info('nats ready');
         self.emit('ready');
+        self._log.addStream({
+            level: bunyan.INFO,
+            stream: self
+        });
     });
 }
 
-util.inherits(KafkaStream, events.EventEmitter);
+util.inherits(BunyanNatsStream, events.EventEmitter);
 
-module.exports = KafkaStream;
+module.exports = BunyanNatsStream;
 
-KafkaStream.prototype.write = function write(record) {
+BunyanNatsStream.prototype.write = function write(record) {
     var self = this;
-    var payload = [{
-        topic: self._topic,
+    var payload = {
+        topic: self._log.fields.name,
         messages: record
-    }];
+    };
 
-    self._log.trace({payload: payload}, 'sending payload to kafka');
-    self._producer.send(payload, function (err, data) {
-        if (err) {
-            self._log.warn({err: err, data: data},
-                           'unable to send log to Kafka');
+    self._log.trace({payload: payload}, 'sending payload to nats');
+    self._hemera.act(payload, function (err, resp) {
+      if (err) {
+          self._log.warn({err: err, data: data},
+                         'unable to send log to nats');
 
-            if (self.listeners('error').length !== 0) {
-                self.emit('error', err, data);
-            }
-        }
+          if (self.listeners('error').length !== 0) {
+              self.emit('error', err, data);
+          }
+      }
+      //console.log("Result", resp)
     });
+
 };

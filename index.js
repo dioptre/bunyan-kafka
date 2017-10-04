@@ -1,10 +1,10 @@
 'use strict';
 
-var events = require('events');
-var util = require('util');
-var Hemera = require('nats-hemera');
-var assert = require('assert-plus');
-var bunyan = require('bunyan');
+const events = require('events');
+const util = require('util');
+const Nats = require('nats');
+const assert = require('assert-plus');
+const bunyan = require('bunyan');
 
 /**
  * natsStream. This is a bunyan plugin that will write your bunyan records to
@@ -28,16 +28,19 @@ function BunyanNatsStream(opts) {
     var self = this;
 
     this._log = opts.log;
+    this._nats = opts.nats;
+    this._added = false;
 
-    this._hemera = new Hemera(opts.nats, { logLevel: 'info' });
-
-    self._hemera.ready(function () {
-        self.emit('ready');
+  	this._nats.on('connect', function(nc) {
+      if (!this._added) {
+        this._added = true;
         self._log.addStream({
             level: bunyan.INFO,
             stream: self
         });
-    });
+        self.emit('ready');
+      }
+  	});
 }
 
 util.inherits(BunyanNatsStream, events.EventEmitter);
@@ -46,19 +49,6 @@ module.exports = BunyanNatsStream;
 
 BunyanNatsStream.prototype.write = function write(record) {
     var self = this;
-    var payload = {
-        topic: self._log.fields.name,
-        data: record
-    };    
-    self._log.trace({payload: payload}, 'sending payload to nats');
-    self._hemera.act(payload, function (err, resp) {
-      if (err) {
-          console.log({err: err, data: resp || "[NO DATA]"}, 'unable to send log to nats')
-          if (self.listeners('error').length !== 0) {
-              self.emit('error', err, resp || "[NO DATA]");
-          }
-      }
-      //console.log("Result", resp)
-    });
-
+    self._log.trace({topic: self._log.fields.name, data: record}, 'sending payload to nats');
+    self._nats.publish(self._log.fields.name, record);
 };

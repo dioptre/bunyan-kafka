@@ -1,6 +1,6 @@
 {
   "name": "bunyan-nats",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "description": "bunyan nats plugin",
   "main": "index.js",
   "scripts": {
@@ -27,8 +27,7 @@
   "dependencies": {
     "assert-plus": "^0.1.5",
     "bunyan": "^1.8.12",
-    "nats": "^0.7.20",
-    "nats-hemera": "^2.1.0"
+    "nats": "^0.7.20"
   },
   "devDependencies": {
     "chai": "^3.0.0",

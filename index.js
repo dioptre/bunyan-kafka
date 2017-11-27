@@ -35,7 +35,7 @@ function BunyanNatsStream(opts) {
       if (!this._added) {
         this._added = true;
         self._log.addStream({
-            level: bunyan.INFO,
+            level: opts.level || bunyan.INFO,
             stream: self
         });
         self.emit('ready');

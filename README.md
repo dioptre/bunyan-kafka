@@ -17,10 +17,10 @@ const servers = ["nats://localhost:4222"];
 const nats = require("nats").connect({"servers": servers});
 var LOGGER = bunyan.createLogger({
     name: TOPIC,
-    level: bunyan.INFO,
+    level: 'warn',
     streams: []
 });
-var bns = new BunyanNatsStream({nats: nats, log : LOGGER});
+var bns = new BunyanNatsStream({nats: nats, log : LOGGER, level: 'warn'});
 ```
 
 ## Tests
